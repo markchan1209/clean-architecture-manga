@@ -2,6 +2,7 @@ namespace Manga.WebApi.UseCases.V1.GetCustomerDetails
 {
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
+    using FluentMediator;
     using Manga.Application.Boundaries.GetCustomerDetails;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -11,14 +12,14 @@ namespace Manga.WebApi.UseCases.V1.GetCustomerDetails
     [ApiController]
     public sealed class CustomersController : ControllerBase
     {
-        private readonly IUseCase _getCustomerDetailsUseCase;
+        private readonly IMediator _mediator;
         private readonly GetCustomerDetailsPresenter _presenter;
 
         public CustomersController(
-            IUseCase getCustomerDetailsUseCase,
+            IMediator mediator,
             GetCustomerDetailsPresenter presenter)
         {
-            _getCustomerDetailsUseCase = getCustomerDetailsUseCase;
+            _mediator = mediator;
             _presenter = presenter;
         }
 
@@ -32,8 +33,8 @@ namespace Manga.WebApi.UseCases.V1.GetCustomerDetails
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCustomer([FromRoute][Required] GetCustomerDetailsRequest request)
         {
-            var getCustomerDetailsInput = new GetCustomerDetailsInput(request.CustomerId);
-            await _getCustomerDetailsUseCase.Execute(getCustomerDetailsInput);
+            var message = new GetCustomerDetailsInput(request.CustomerId);
+            await _mediator.PublishAsync(message);
             return _presenter.ViewModel;
         }
     }

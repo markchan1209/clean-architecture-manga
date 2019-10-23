@@ -30,6 +30,7 @@ namespace Manga.WebApi
             services.AddInMemoryPersistence();
             services.AddPresentersV1();
             services.AddPresentersV2();
+            services.AddMediator();
         }
 
         public void ConfigureProductionServices(IServiceCollection services)
@@ -43,6 +44,7 @@ namespace Manga.WebApi
             services.AddSQLServerPersistence(Configuration);
             services.AddPresentersV1();
             services.AddPresentersV2();
+            services.AddMediator();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

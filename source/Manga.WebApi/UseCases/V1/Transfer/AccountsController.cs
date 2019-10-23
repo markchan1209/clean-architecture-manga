@@ -2,6 +2,7 @@ namespace Manga.WebApi.UseCases.V1.Transfer
 {
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
+    using FluentMediator;
     using Manga.Application.Boundaries.Transfer;
     using Manga.Domain.ValueObjects;
     using Manga.WebApi.DependencyInjection.FeatureFlags;
@@ -15,14 +16,14 @@ namespace Manga.WebApi.UseCases.V1.Transfer
     [ApiController]
     public sealed class AccountsController : ControllerBase
     {
-        private readonly IUseCase _TransferUseCase;
+        private readonly IMediator _mediator;
         private readonly TransferPresenter _presenter;
 
         public AccountsController(
-            IUseCase TransferUseCase,
+            IMediator mediator,
             TransferPresenter presenter)
         {
-            _TransferUseCase = TransferUseCase;
+            _mediator = mediator;
             _presenter = presenter;
         }
 
@@ -40,13 +41,13 @@ namespace Manga.WebApi.UseCases.V1.Transfer
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Transfer([FromBody][Required] TransferRequest request)
         {
-            var transferInput = new TransferInput(
+            var message = new TransferInput(
                 request.OriginAccountId,
                 request.DestinationAccountId,
                 new PositiveMoney(request.Amount)
             );
 
-            await _TransferUseCase.Execute(transferInput);
+            await _mediator.PublishAsync(message);
             return _presenter.ViewModel;
         }
     }

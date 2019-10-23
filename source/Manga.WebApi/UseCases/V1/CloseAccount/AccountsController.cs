@@ -2,6 +2,7 @@ namespace Manga.WebApi.UseCases.V1.CloseAccount
 {
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
+    using FluentMediator;
     using Manga.Application.Boundaries.CloseAccount;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -11,14 +12,14 @@ namespace Manga.WebApi.UseCases.V1.CloseAccount
     [ApiController]
     public sealed class AccountsController : ControllerBase
     {
-        private readonly IUseCase _closeAccountUseCase;
+        private readonly IMediator _mediator;
         private readonly CloseAccountPresenter _presenter;
 
         public AccountsController(
-            IUseCase closeAccountUseCase,
+            IMediator mediator,
             CloseAccountPresenter presenter)
         {
-            _closeAccountUseCase = closeAccountUseCase;
+            _mediator = mediator;
             _presenter = presenter;
         }
 
@@ -36,8 +37,8 @@ namespace Manga.WebApi.UseCases.V1.CloseAccount
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Close([FromRoute][Required] CloseAccountRequest request)
         {
-            var closeAccountInput = new CloseAccountInput(request.AccountId);
-            await _closeAccountUseCase.Execute(closeAccountInput);
+            var message = new CloseAccountInput(request.AccountId);
+            await _mediator.PublishAsync(message);
             return _presenter.ViewModel;
         }
     }

@@ -2,6 +2,7 @@ namespace Manga.WebApi.UseCases.V1.Withdraw
 {
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
+    using FluentMediator;
     using Manga.Application.Boundaries.Withdraw;
     using Manga.Domain.ValueObjects;
     using Microsoft.AspNetCore.Http;
@@ -12,14 +13,14 @@ namespace Manga.WebApi.UseCases.V1.Withdraw
     [ApiController]
     public sealed class AccountsController : ControllerBase
     {
-        private readonly IUseCase _withdrawUseCase;
+        private readonly IMediator _mediator;
         private readonly WithdrawPresenter _presenter;
 
         public AccountsController(
-            IUseCase withdrawUseCase,
+            IMediator mediator,
             WithdrawPresenter presenter)
         {
-            _withdrawUseCase = withdrawUseCase;
+            _mediator = mediator;
             _presenter = presenter;
         }
 
@@ -37,11 +38,11 @@ namespace Manga.WebApi.UseCases.V1.Withdraw
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Withdraw([FromBody][Required] WithdrawRequest request)
         {
-            var withdrawInput = new WithdrawInput(
+            var message = new WithdrawInput(
                 request.AccountId,
                 new PositiveMoney(request.Amount)
             );
-            await _withdrawUseCase.Execute(withdrawInput);
+            await _mediator.PublishAsync(message);
             return _presenter.ViewModel;
         }
     }

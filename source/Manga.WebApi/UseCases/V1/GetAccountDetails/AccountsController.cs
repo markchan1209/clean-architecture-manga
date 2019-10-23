@@ -2,6 +2,7 @@ namespace Manga.WebApi.UseCases.V1.GetAccountDetails
 {
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
+    using FluentMediator;
     using Manga.Application.Boundaries.GetAccountDetails;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -11,14 +12,14 @@ namespace Manga.WebApi.UseCases.V1.GetAccountDetails
     [ApiController]
     public sealed class AccountsController : ControllerBase
     {
-        private readonly IUseCase _getAccountDetailsUseCase;
+        private readonly IMediator _mediator;
         private readonly GetAccountDetailsPresenter _presenter;
 
         public AccountsController(
-            IUseCase getAccountDetailsUseCase,
+            IMediator mediator,
             GetAccountDetailsPresenter presenter)
         {
-            _getAccountDetailsUseCase = getAccountDetailsUseCase;
+            _mediator = mediator;
             _presenter = presenter;
         }
 
@@ -32,8 +33,8 @@ namespace Manga.WebApi.UseCases.V1.GetAccountDetails
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get([FromRoute][Required] GetAccountDetailsRequest request)
         {
-            var getAccountDetailsInput = new GetAccountDetailsInput(request.AccountId);
-            await _getAccountDetailsUseCase.Execute(getAccountDetailsInput);
+            var message = new GetAccountDetailsInput(request.AccountId);
+            await _mediator.PublishAsync(message);
             return _presenter.ViewModel;
         }
     }

@@ -2,6 +2,7 @@ namespace Manga.WebApi.UseCases.V1.Deposit
 {
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
+    using FluentMediator;
     using Manga.Application.Boundaries.Deposit;
     using Manga.Domain.ValueObjects;
     using Microsoft.AspNetCore.Http;
@@ -12,14 +13,14 @@ namespace Manga.WebApi.UseCases.V1.Deposit
     [ApiController]
     public sealed class AccountsController : ControllerBase
     {
-        private readonly IUseCase _depositUseCase;
+        private readonly IMediator _mediator;
         private readonly DepositPresenter _presenter;
 
         public AccountsController(
-            IUseCase depositUseCase,
+            IMediator mediator,
             DepositPresenter presenter)
         {
-            _depositUseCase = depositUseCase;
+            _mediator = mediator;
             _presenter = presenter;
         }
 
@@ -37,12 +38,12 @@ namespace Manga.WebApi.UseCases.V1.Deposit
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Deposit([FromBody][Required] DepositRequest request)
         {
-            var depositInput = new DepositInput(
+            var message = new DepositInput(
                 request.AccountId,
                 new PositiveMoney(request.Amount)
             );
 
-            await _depositUseCase.Execute(depositInput);
+            await _mediator.PublishAsync(message);
             return _presenter.ViewModel;
         }
     }

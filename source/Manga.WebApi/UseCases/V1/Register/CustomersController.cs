@@ -2,6 +2,7 @@ namespace Manga.WebApi.UseCases.V1.Register
 {
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
+    using FluentMediator;
     using Manga.Application.Boundaries.Register;
     using Manga.Domain.ValueObjects;
     using Microsoft.AspNetCore.Http;
@@ -12,14 +13,14 @@ namespace Manga.WebApi.UseCases.V1.Register
     [ApiController]
     public sealed class CustomersController : ControllerBase
     {
-        private readonly IUseCase _registerUseCase;
+        private readonly IMediator _mediator;
         private readonly RegisterPresenter _presenter;
 
         public CustomersController(
-            IUseCase registerUseCase,
+            IMediator mediator,
             RegisterPresenter presenter)
         {
-            _registerUseCase = registerUseCase;
+            _mediator = mediator;
             _presenter = presenter;
         }
 
@@ -37,12 +38,12 @@ namespace Manga.WebApi.UseCases.V1.Register
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Post([FromBody][Required] RegisterRequest request)
         {
-            var registerInput = new RegisterInput(
+            var message = new RegisterInput(
                 new SSN(request.SSN),
                 new Name(request.Name),
                 new PositiveMoney(request.InitialAmount)
             );
-            await _registerUseCase.Execute(registerInput);
+            await _mediator.PublishAsync(message);
             return _presenter.ViewModel;
         }
     }
